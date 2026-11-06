@@ -62,6 +62,8 @@ def test_register_login_and_logout(client):
     registered = client.post("/api/auth/register", json={
         "name": "Ada Lovelace", "email": "ADA@example.com", "password": "safe-password-123"})
     assert registered.status_code == 201
+    cookie = registered.headers["Set-Cookie"].lower()
+    assert "httponly" in cookie and "samesite=lax" in cookie
     assert registered.get_json()["email"] == "ada@example.com"
     assert client.get("/api/auth/me").get_json() == {
         "authenticated": True, "name": "Ada Lovelace", "email": "ada@example.com"}

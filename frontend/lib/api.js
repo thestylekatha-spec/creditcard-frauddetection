@@ -1,17 +1,17 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 // Optional: mirror of the backend's ADMIN_API_KEY (protects "Clear data").
 const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || "";
-const TIMEOUT_MS = 15000;
+const TIMEOUT_MS = 90000;
 
 async function request(path, options = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   let res;
   try {
-    res = await fetch(`${API_URL}${path}`, {
+    res = await fetch(path, {
       ...options,
       cache: "no-store",
-      credentials: "include",
+      credentials: "same-origin",
       headers: {
         ...(options.body ? { "Content-Type": "application/json" } : {}),
         ...(ADMIN_KEY ? { "x-api-key": ADMIN_KEY } : {}),

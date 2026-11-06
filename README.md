@@ -38,9 +38,9 @@ python -m pytest -q               # API + feature-engineering tests (uses a temp
 ## Pages
 | Route | What it does |
 |---|---|
-| `/` | All 9 slides as a website: abstract, introduction, existing system, architecture, proposed solution, literature survey, conclusion |
-| `/detect` | Transaction form -> Flask `/api/predict` -> Fraud/Legitimate + probability + risk indicators |
-| `/dashboard` | Totals, fraud rate, charts, recent transactions, model comparison, feature importance |
+| `/` | Login-protected project information: abstract, introduction, existing system, architecture, proposed solution, literature survey, conclusion |
+| `/detect` | Login-protected transaction form -> Flask `/api/predict` -> Fraud/Legitimate + probability + risk indicators |
+| `/dashboard` | Login-protected totals, fraud rate, charts, recent transactions, model comparison, feature importance |
 | `/login` | Log in with email and password |
 | `/register` | Create an account with name, email, and password |
 
@@ -79,11 +79,11 @@ Invalid input (missing/NaN/inf values, hour outside 0-23 or non-integer, unknown
 | `MODEL_PATH` / `METRICS_PATH` | `backend/model.pkl` / `metrics.json` | Model artifacts |
 | `FRAUD_THRESHOLD` | threshold from training | Override the decision threshold (0-1) |
 | `ADMIN_API_KEY` | unset | If set, `DELETE /api/transactions` needs header `x-api-key` |
-| `SESSION_SECRET` | random per process | Flask session signing key; set a persistent secret in production |
-| `SESSION_COOKIE_SAMESITE` | `Lax` | Session cookie SameSite policy (`None` is needed for separate-site frontend/API deployments) |
-| `SESSION_COOKIE_SECURE` | `0` | Set to `1` when serving the API over HTTPS |
+| `SESSION_SECRET` | random per process | Flask session signing key; Render blueprint generates a persistent value |
+| `SESSION_COOKIE_SAMESITE` | `Lax` | Session cookie SameSite policy; browser talks to the same-origin Next.js API proxy |
+| `SESSION_COOKIE_SECURE` | `0` | Set to `1` when serving the API over HTTPS; Render blueprint sets this |
 
-Frontend: `NEXT_PUBLIC_API_URL` (backend URL, inlined at build time), optional `NEXT_PUBLIC_ADMIN_KEY` (mirror of `ADMIN_API_KEY` so the dashboard's "Clear data" button works).
+Frontend: `NEXT_PUBLIC_API_URL` (backend URL, inlined at build time), optional `NEXT_PUBLIC_ADMIN_KEY` (mirror of `ADMIN_API_KEY` so the dashboard's "Clear data" button works). API calls use a same-origin Next.js proxy so the browser reliably retains the login session when the UI and API are deployed on different hosts.
 
 **CORS_ORIGIN entries** are comma separated: a plain URL matches exactly (`https://your-app.vercel.app`), and an entry containing `\`, `*`, `[]`, `()` or `?` is treated as a regular expression - anchor it with `$` so suffix tricks like `your-app.vercel.app.evil.com` cannot match. `https://.*\.vercel\.app$` allows every Vercel deployment of your project, including preview URLs.
 
@@ -133,6 +133,7 @@ The second entry is a regex (the `$` matters) that also allows Vercel **preview 
 Notes:
 - `NEXT_PUBLIC_API_URL` is inlined at **build** time - change it in Vercel and redeploy the UI.
 - The UI calls the API over **https**, so `NEXT_PUBLIC_API_URL` must be `https://...`.
+- The Render blueprint generates a persistent `SESSION_SECRET` and sets secure session cookies. Sync the updated blueprint in Render when applying these settings to an existing service.
 - Render's free instances **sleep after ~15 min idle**; the first request takes 30-60s to wake the API (`/api/health` keeps waking it on the dashboard's 10s poll while a page is open).
 - `model.pkl` and `metrics.json` are committed, so no training runs during deploy (if the file is ever missing, the API trains a model at boot - first start just takes longer).
 - **Data persistence:** on the free plan `backend/fraud.db` lives inside the Render instance and is reset on redeploy. To keep history, use a paid instance + persistent disk mounted at `/data` and set `DB_PATH=/data/fraud.db` (see the commented block in `render.yaml`).

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { login, register } from "@/lib/api";
+import { getCurrentUser, login, register } from "@/lib/api";
 
 export default function AuthForm({ mode }) {
   const isRegister = mode === "register";
@@ -23,6 +23,10 @@ export default function AuthForm({ mode }) {
     setLoading(true);
     try {
       await (isRegister ? register(form) : login({ email: form.email, password: form.password }));
+      const user = await getCurrentUser();
+      if (!user.authenticated) {
+        throw new Error("Login succeeded, but your session could not be verified. Please try again.");
+      }
       router.replace("/");
     } catch (requestError) {
       setError(requestError.message);
