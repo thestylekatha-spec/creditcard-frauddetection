@@ -11,6 +11,7 @@ async function request(path, options = {}) {
     res = await fetch(`${API_URL}${path}`, {
       ...options,
       cache: "no-store",
+      credentials: "include",
       headers: {
         ...(options.body ? { "Content-Type": "application/json" } : {}),
         ...(ADMIN_KEY ? { "x-api-key": ADMIN_KEY } : {}),
@@ -49,3 +50,7 @@ export const getTransactions = (limit = 15) => request(`/api/transactions?limit=
 export const getModelInfo = () => request("/api/model-info");
 export const getOptions = () => request("/api/options");
 export const clearTransactions = () => request("/api/transactions", { method: "DELETE" });
+export const register = (payload) =>
+  request("/api/auth/register", { method: "POST", body: JSON.stringify(payload) });
+export const login = (payload) =>
+  request("/api/auth/login", { method: "POST", body: JSON.stringify(payload) });

@@ -10,6 +10,8 @@ const links = [
   { href: "/#architecture", label: "Architecture" },
   { href: "/detect", label: "Detect Fraud" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/login", label: "Log in" },
+  { href: "/register", label: "Create account" },
 ];
 
 export default function Navbar() {

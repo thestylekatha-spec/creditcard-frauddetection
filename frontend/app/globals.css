@@ -104,6 +104,15 @@ tr.hl td { background: var(--good-bg); font-weight: 600; }
 .risk { font-weight: 700; text-transform: capitalize; } .risk.low { color: var(--good); } .risk.medium { color: var(--warn); } .risk.high { color: var(--bad); }
 .result.bad .list li::before { content: "!"; color: var(--bad); }
 
+/* authentication */
+.auth-page { min-height: calc(100vh - 180px); display: grid; place-items: center; }
+.auth-card { width: min(100%, 460px); padding: 32px; }
+.auth-card h1 { margin-bottom: 8px; }
+.auth-form { display: grid; gap: 16px; margin-top: 24px; }
+.auth-form .btn.full { margin-top: 0; }
+.auth-switch { margin: 22px 0 0; text-align: center; color: var(--muted); }
+.auth-switch a { font-weight: 700; }
+
 /* dashboard */
 .stat { display: flex; flex-direction: column; margin: 0 !important; }
 .stat strong { font-size: 2rem; }

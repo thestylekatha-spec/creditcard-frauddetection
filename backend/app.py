@@ -14,13 +14,16 @@ import datetime as dt
 import json
 import math
 import os
+import re
+import secrets
 import sqlite3
 from pathlib import Path
 
 import joblib
 import pandas as pd
-from flask import Flask, g, jsonify, request
+from flask import Flask, g, jsonify, request, session
 from flask_cors import CORS
+from werkzeug.security import check_password_hash, generate_password_hash
 
 import train_model
 from features import CATEGORIES, CHANNELS, engineer, explain
@@ -42,9 +45,16 @@ DEBUG = os.getenv("FLASK_DEBUG", "0").strip().lower() in ("1", "true", "yes")
 ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "")
 
 app = Flask(__name__)
+app.config.update(
+    SECRET_KEY=os.getenv("SESSION_SECRET") or secrets.token_hex(32),
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE=os.getenv("SESSION_COOKIE_SAMESITE", "Lax"),
+    SESSION_COOKIE_SECURE=os.getenv("SESSION_COOKIE_SECURE", "0").strip().lower() in ("1", "true", "yes"),
+)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024  # request bodies > 16 KB are rejected
 CORS(app, origins=[o.strip() for o in os.getenv(
-    "CORS_ORIGINS", "http://localhost:3000").split(",") if o.strip()] or ["http://localhost:3000"])
+    "CORS_ORIGINS", "http://localhost:3000").split(",") if o.strip()] or ["http://localhost:3000"],
+    supports_credentials=True)
 
 
 # ---------- model serving layer ----------
@@ -123,6 +133,9 @@ with _connect() as _c:
         avg_txn_amount REAL, probability REAL, label TEXT, risk_level TEXT, reasons TEXT)""")
     _c.execute("CREATE INDEX IF NOT EXISTS idx_txn_created ON transactions(created_at)")
     _c.execute("CREATE INDEX IF NOT EXISTS idx_txn_label ON transactions(label)")
+    _c.execute("""CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL, created_at TEXT NOT NULL)""")
 
 
 # ---------- validation ----------
@@ -176,6 +189,83 @@ def parse_payload(data):
 
 
 # ---------- routes ----------
+def _validated_auth_input(data, include_name=False):
+    if not isinstance(data, dict):
+        return None, {"payload": "Expected a JSON object"}
+
+    name = data.get("name", "")
+    email = data.get("email", "")
+    password = data.get("password", "")
+    errors = {}
+    if include_name and (not isinstance(name, str) or not name.strip() or len(name.strip()) > 100):
+        errors["name"] = "Enter a name between 1 and 100 characters"
+    if not isinstance(email, str) or len(email.strip()) > 254 or not re.fullmatch(
+            r"[^@\s]+@[^@\s]+\.[^@\s]+", email.strip()):
+        errors["email"] = "Enter a valid email address"
+    if not isinstance(password, str) or len(password) < 8 or len(password) > 128:
+        errors["password"] = "Password must be between 8 and 128 characters"
+    if errors:
+        return None, errors
+    return {"name": name.strip(), "email": email.strip().lower(), "password": password}, {}
+
+
+@app.post("/api/auth/register")
+def register():
+    data, errors = _validated_auth_input(request.get_json(silent=True), include_name=True)
+    if errors:
+        return jsonify(error="Invalid input", fields=errors), 400
+
+    db = get_db()
+    try:
+        cur = db.execute(
+            "INSERT INTO users (name, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
+            (data["name"], data["email"], generate_password_hash(data["password"]),
+             dt.datetime.now().isoformat(timespec="seconds")))
+        db.commit()
+    except sqlite3.IntegrityError:
+        return jsonify(error="An account with this email already exists"), 409
+
+    session.clear()
+    session["user_id"] = cur.lastrowid
+    return jsonify(ok=True, name=data["name"], email=data["email"]), 201
+
+
+@app.post("/api/auth/login")
+def login():
+    data, errors = _validated_auth_input(request.get_json(silent=True))
+    if errors:
+        return jsonify(error="Invalid input", fields=errors), 400
+
+    user = get_db().execute(
+        "SELECT id, name, email, password_hash FROM users WHERE email = ?",
+        (data["email"],)).fetchone()
+    if user is None or not check_password_hash(user["password_hash"], data["password"]):
+        return jsonify(error="Email or password is incorrect"), 401
+
+    session.clear()
+    session["user_id"] = user["id"]
+    return jsonify(ok=True, name=user["name"], email=user["email"])
+
+
+@app.get("/api/auth/me")
+def current_user():
+    user_id = session.get("user_id")
+    if user_id is None:
+        return jsonify(authenticated=False)
+    user = get_db().execute(
+        "SELECT name, email FROM users WHERE id = ?", (user_id,)).fetchone()
+    if user is None:
+        session.clear()
+        return jsonify(authenticated=False)
+    return jsonify(authenticated=True, name=user["name"], email=user["email"])
+
+
+@app.post("/api/auth/logout")
+def logout():
+    session.clear()
+    return jsonify(ok=True)
+
+
 @app.get("/api/health")
 def health():
     return jsonify(status="ok" if model is not None else "degraded",

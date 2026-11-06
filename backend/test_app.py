@@ -57,6 +57,45 @@ def test_options_lists(client):
     assert data["channels"] == ["online", "in_store", "atm"]
 
 
+# ---------- authentication ----------
+def test_register_login_and_logout(client):
+    registered = client.post("/api/auth/register", json={
+        "name": "Ada Lovelace", "email": "ADA@example.com", "password": "safe-password-123"})
+    assert registered.status_code == 201
+    assert registered.get_json()["email"] == "ada@example.com"
+    assert client.get("/api/auth/me").get_json() == {
+        "authenticated": True, "name": "Ada Lovelace", "email": "ada@example.com"}
+
+    client.post("/api/auth/logout")
+    assert client.get("/api/auth/me").get_json() == {"authenticated": False}
+
+    logged_in = client.post("/api/auth/login", json={
+        "email": "ada@example.com", "password": "safe-password-123"})
+    assert logged_in.status_code == 200
+    assert client.get("/api/auth/me").get_json()["authenticated"] is True
+
+    client.post("/api/auth/logout")
+    assert client.get("/api/auth/me").get_json() == {"authenticated": False}
+
+
+def test_auth_rejects_duplicate_email_and_bad_credentials(client):
+    details = {"name": "Ada", "email": "duplicate@example.com", "password": "safe-password-123"}
+    assert client.post("/api/auth/register", json=details).status_code == 201
+    assert client.post("/api/auth/register", json=details).status_code == 409
+    client.post("/api/auth/logout")
+    bad_login = client.post("/api/auth/login", json={
+        "email": details["email"], "password": "wrong-password"})
+    assert bad_login.status_code == 401
+    assert client.get("/api/auth/me").get_json() == {"authenticated": False}
+
+
+def test_auth_validates_name_email_and_password(client):
+    response = client.post("/api/auth/register", json={
+        "name": " ", "email": "not-an-email", "password": "short"})
+    assert response.status_code == 400
+    assert set(response.get_json()["fields"]) == {"name", "email", "password"}
+
+
 # ---------- prediction happy path ----------
 def test_predict_valid(client):
     r = post(client)

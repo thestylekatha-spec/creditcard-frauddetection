@@ -5,7 +5,7 @@ Web implementation of the mini-project presentation (Methodist College of Engine
 ```
 fraud-detection/
 ├── backend/    Flask API + ML training (scikit-learn) + SQLite
-└── frontend/   Next.js 14 (App Router) UI: Home, Detect Fraud, Dashboard
+└── frontend/   Next.js 14 (App Router) UI: Home, Detect Fraud, Dashboard, Login, Register
 ```
 
 ## Run it
@@ -41,6 +41,8 @@ python -m pytest -q               # API + feature-engineering tests (uses a temp
 | `/` | All 9 slides as a website: abstract, introduction, existing system, architecture, proposed solution, literature survey, conclusion |
 | `/detect` | Transaction form -> Flask `/api/predict` -> Fraud/Legitimate + probability + risk indicators |
 | `/dashboard` | Totals, fraud rate, charts, recent transactions, model comparison, feature importance |
+| `/login` | Log in with email and password |
+| `/register` | Create an account with name, email, and password |
 
 ## API
 | Method | Endpoint | Description |
@@ -52,6 +54,10 @@ python -m pytest -q               # API + feature-engineering tests (uses a temp
 | GET | `/api/model-info` | Metrics of all trained models |
 | GET | `/api/options` | Allowed categories and channels |
 | GET | `/api/health` | Health check |
+| POST | `/api/auth/register` | Create an account and sign in |
+| POST | `/api/auth/login` | Sign in with email and password |
+| GET | `/api/auth/me` | Check the current login session |
+| POST | `/api/auth/logout` | Sign out |
 
 `POST /api/predict` body:
 ```json
@@ -73,6 +79,9 @@ Invalid input (missing/NaN/inf values, hour outside 0-23 or non-integer, unknown
 | `MODEL_PATH` / `METRICS_PATH` | `backend/model.pkl` / `metrics.json` | Model artifacts |
 | `FRAUD_THRESHOLD` | threshold from training | Override the decision threshold (0-1) |
 | `ADMIN_API_KEY` | unset | If set, `DELETE /api/transactions` needs header `x-api-key` |
+| `SESSION_SECRET` | random per process | Flask session signing key; set a persistent secret in production |
+| `SESSION_COOKIE_SAMESITE` | `Lax` | Session cookie SameSite policy (`None` is needed for separate-site frontend/API deployments) |
+| `SESSION_COOKIE_SECURE` | `0` | Set to `1` when serving the API over HTTPS |
 
 Frontend: `NEXT_PUBLIC_API_URL` (backend URL, inlined at build time), optional `NEXT_PUBLIC_ADMIN_KEY` (mirror of `ADMIN_API_KEY` so the dashboard's "Clear data" button works).
 
