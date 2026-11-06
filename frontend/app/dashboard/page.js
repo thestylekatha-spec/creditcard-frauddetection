@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import AuthGate from "@/components/AuthGate";
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
@@ -20,6 +21,14 @@ function Stat({ label, value, tone }) {
 }
 
 export default function Dashboard() {
+  return (
+    <AuthGate>
+      <DashboardContent />
+    </AuthGate>
+  );
+}
+
+function DashboardContent() {
   const [stats, setStats] = useState(null);
   const [txns, setTxns] = useState([]);
   const [info, setInfo] = useState(null);

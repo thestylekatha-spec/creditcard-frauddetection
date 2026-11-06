@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import AuthGate from "@/components/AuthGate";
 import { getOptions, predict } from "@/lib/api";
 
 const FALLBACK_CATEGORIES = ["grocery", "fuel", "restaurant", "utilities", "entertainment",
@@ -30,6 +31,14 @@ function Field({ k, label, type = "number", hint, form, set, fieldErrors, ...res
 }
 
 export default function DetectPage() {
+  return (
+    <AuthGate>
+      <DetectContent />
+    </AuthGate>
+  );
+}
+
+function DetectContent() {
   const [form, setForm] = useState(EMPTY);
   const [opts, setOpts] = useState({ categories: FALLBACK_CATEGORIES, channels: FALLBACK_CHANNELS });
   const [result, setResult] = useState(null);
