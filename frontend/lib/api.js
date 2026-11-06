@@ -54,3 +54,4 @@ export const register = (payload) =>
   request("/api/auth/register", { method: "POST", body: JSON.stringify(payload) });
 export const login = (payload) =>
   request("/api/auth/login", { method: "POST", body: JSON.stringify(payload) });
+export const getCurrentUser = () => request("/api/auth/me");

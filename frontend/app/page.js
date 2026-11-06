@@ -1,5 +1,10 @@
-import { redirect } from "next/navigation";
+import AuthGate from "@/components/AuthGate";
+import HomeContent from "@/components/HomeContent";
 
 export default function Home() {
-  redirect("/login");
+  return (
+    <AuthGate>
+      <HomeContent />
+    </AuthGate>
+  );
 }
