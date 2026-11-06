@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 
-const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
-
 export async function middleware(request) {
   const sessionCookie = request.cookies.get("session");
   if (!sessionCookie) {
@@ -9,8 +7,8 @@ export async function middleware(request) {
   }
 
   try {
-    const response = await fetch(`${apiUrl}/api/auth/me`, {
-      headers: { cookie: `session=${encodeURIComponent(sessionCookie.value)}` },
+    const response = await fetch(new URL("/api/auth/me", request.url), {
+      headers: { cookie: request.headers.get("cookie") || "" },
       cache: "no-store",
     });
     const user = await response.json();

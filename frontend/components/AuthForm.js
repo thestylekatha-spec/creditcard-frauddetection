@@ -1,12 +1,10 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getCurrentUser, login, register } from "@/lib/api";
 
 export default function AuthForm({ mode }) {
   const isRegister = mode === "register";
-  const router = useRouter();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -27,7 +25,7 @@ export default function AuthForm({ mode }) {
       if (!user.authenticated) {
         throw new Error("Login succeeded, but your session could not be verified. Please try again.");
       }
-      router.replace("/");
+      window.location.assign("/");
     } catch (requestError) {
       setError(requestError.message);
       setFieldErrors(requestError.fields || {});
