@@ -1,0 +1,13 @@
+node_modules/
+.next/
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.venv/
+backend/fraud.db
+backend/fraud.db-wal
+backend/fraud.db-shm
+.env
+.env.local
+.env*.local

@@ -1,0 +1,36 @@
+# Render blueprint - deploys the Flask/ML backend only (the UI goes to Vercel).
+# Render dashboard -> New -> Blueprint -> select the repo; render.yaml is read automatically.
+#
+# After the service exists, set CORS_ORIGINS (below) to your Vercel URL(s), e.g.
+#   https://your-app.vercel.app,https://.*\.vercel\.app$
+# then trigger a Manual Deploy -> Deploy latest commit.
+
+services:
+  - type: web
+    name: fraud-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    # one worker + threads: SQLite is happiest with a single writer process
+    startCommand: gunicorn --workers 1 --threads 4 --timeout 60 --bind 0.0.0.0:$PORT app:app
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: CORS_ORIGINS
+        sync: false   # <-- comma separated Vercel origin(s), e.g. https://your-app.vercel.app,https://.*\.vercel\.app$
+      # Optional: protect DELETE /api/transactions (mirror the same value as
+      # NEXT_PUBLIC_ADMIN_KEY on Vercel so "Clear data" keeps working):
+      # - key: ADMIN_API_KEY
+      #   generateValue: true
+    # Transaction history lives in backend/fraud.db inside the instance and is
+    # lost on redeploy on the free plan. For persistence, attach a paid instance
+    # and a persistent disk, then add:
+    #   disk:
+    #     name: fraud-data
+    #     mountPath: /data
+    #   and env var DB_PATH=/data/fraud.db
+    autoDeploy: true
