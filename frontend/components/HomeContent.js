@@ -23,7 +23,7 @@ export default function HomeContent() {
       <section className="hero">
         <div className="container hero-inner">
           <div>
-            <p className="eyebrow">{project.college}</p>
+            <p className="eyebrow">FraudGuard</p>
             <h1>{project.title}</h1>
             <p className="lead">{project.tagline}</p>
             <div className="cta">
@@ -32,7 +32,7 @@ export default function HomeContent() {
             </div>
           </div>
           <div className="hero-logo">
-            <Image src="/logo.png" alt="Methodist College of Engineering and Technology" width={220} height={220} priority />
+            <Image src="/fraudguard-mark.svg" alt="FraudGuard shield" width={220} height={220} priority />
           </div>
         </div>
       </section>

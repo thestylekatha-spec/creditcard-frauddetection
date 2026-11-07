@@ -1,6 +1,5 @@
 // All text below comes from the project presentation (MINI_PROJECT_PPT.pptx).
 export const project = {
-  college: "Methodist College of Engineering and Technology",
   title: "Credit Card Fraud Detection",
   tagline: "A web-based system that uses machine learning to flag potentially fraudulent credit card transactions.",
 };

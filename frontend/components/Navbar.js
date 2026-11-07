@@ -19,7 +19,7 @@ export default function Navbar() {
     <header className="nav">
       <div className="container nav-inner">
         <Link href="/" className="brand" onClick={() => setOpen(false)}>
-          <Image src="/logo.png" alt="MCET logo" width={36} height={36} />
+          <Image src="/fraudguard-mark.svg" alt="" width={36} height={36} />
           <span>FraudGuard</span>
         </Link>
         <button className="burger" aria-label="Menu" onClick={() => setOpen(!open)}>☰</button>

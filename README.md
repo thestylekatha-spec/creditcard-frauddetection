@@ -1,6 +1,6 @@
 # Credit Card Fraud Detection — Next.js + Flask
 
-Web implementation of the mini-project presentation (Methodist College of Engineering and Technology).
+Web application for credit card fraud detection.
 
 ```
 fraud-detection/
