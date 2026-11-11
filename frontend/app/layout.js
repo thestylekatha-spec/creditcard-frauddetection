@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "Credit Card Fraud Detection | FraudGuard",
+  title: "Credit Card Fraud Detection",
   description: "Machine-learning based credit card fraud detection web application.",
 };
 

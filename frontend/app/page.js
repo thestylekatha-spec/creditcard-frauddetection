@@ -1,10 +1,5 @@
-import AuthGate from "@/components/AuthGate";
-import HomeContent from "@/components/HomeContent";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <AuthGate>
-      <HomeContent />
-    </AuthGate>
-  );
+  redirect("/dashboard");
 }

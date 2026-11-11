@@ -5,7 +5,7 @@ Web application for credit card fraud detection.
 ```
 fraud-detection/
 ├── backend/    Flask API + ML training (scikit-learn) + SQLite
-└── frontend/   Next.js 14 (App Router) UI: Home, Detect Fraud, Dashboard, Login, Register
+└── frontend/   Next.js 14 (App Router) UI: Detect Fraud, Dashboard, Login, Register
 ```
 
 ## Run it
@@ -38,7 +38,7 @@ python -m pytest -q               # API + feature-engineering tests (uses a temp
 ## Pages
 | Route | What it does |
 |---|---|
-| `/` | Login-protected project information: abstract, introduction, existing system, architecture, proposed solution, literature survey, conclusion |
+| `/` | Redirects to the dashboard |
 | `/detect` | Login-protected transaction form -> Flask `/api/predict` -> Fraud/Legitimate + probability + risk indicators |
 | `/dashboard` | Login-protected totals, fraud rate, charts, recent transactions, model comparison, feature importance |
 | `/login` | Log in with email and password |
@@ -88,14 +88,6 @@ Frontend: `NEXT_PUBLIC_API_URL` (backend URL, inlined at build time), optional `
 **CORS_ORIGIN entries** are comma separated: a plain URL matches exactly (`https://your-app.vercel.app`), and an entry containing `\`, `*`, `[]`, `()` or `?` is treated as a regular expression - anchor it with `$` so suffix tricks like `your-app.vercel.app.evil.com` cannot match. `https://.*\.vercel\.app$` allows every Vercel deployment of your project, including preview URLs.
 
 `/api/health` reports `model_loaded` and the active `threshold`; if the model cannot be loaded the API still starts and `/api/predict` answers `503` instead of crashing.
-
-## Mapping to the architecture slide
-1. **User layer** — browser UI (responsive)
-2. **Web application layer** — Next.js frontend + Flask backend (`backend/app.py`)
-3. **Model serving layer** — `/api/predict` loads `model.pkl`
-4. **Database layer** — SQLite (`backend/fraud.db`) stores transactions, predictions, logs
-5. **Output layer** — result card (Fraudulent / Legitimate) on `/detect`
-6. **Training pipeline** — `backend/train_model.py`: data -> cleaning/imputation/encoding/scaling -> Logistic Regression, Random Forest, Gradient Boosting -> best model saved as `.pkl`
 
 ## Using real data
 `train_model.py` generates a **synthetic** dataset by default so the project runs out of the box. Because it is synthetic, the reported scores are optimistic — don't quote them as real-world accuracy.

@@ -38,7 +38,7 @@ export default function AuthForm({ mode }) {
     <div className="container page auth-page">
       <section className="auth-card card">
         <p className="eyebrow">{isRegister ? "Get started" : "Welcome back"}</p>
-        <h1 className="h1-sm">{isRegister ? "Create your account" : "Log in to FraudGuard"}</h1>
+        <h1 className="h1-sm">{isRegister ? "Create your account" : "Log in to Credit Card Fraud Detection"}</h1>
         <p className="muted">
           {isRegister ? "Use your name and email to create an account." : "Enter your email and password to continue."}
         </p>
@@ -74,7 +74,7 @@ export default function AuthForm({ mode }) {
         </form>
 
         <p className="auth-switch">
-          {isRegister ? "Already have an account?" : "New to FraudGuard?"}{" "}
+          {isRegister ? "Already have an account?" : "New to Credit Card Fraud Detection?"}{" "}
           <Link href={isRegister ? "/login" : "/register"}>
             {isRegister ? "Log in" : "Create an account"}
           </Link>

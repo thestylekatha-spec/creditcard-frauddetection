@@ -5,9 +5,6 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const links = [
-  { href: "/", label: "Home" },
-  { href: "/#abstract", label: "About" },
-  { href: "/#architecture", label: "Architecture" },
   { href: "/detect", label: "Detect Fraud" },
   { href: "/dashboard", label: "Dashboard" },
 ];
@@ -18,9 +15,9 @@ export default function Navbar() {
   return (
     <header className="nav">
       <div className="container nav-inner">
-        <Link href="/" className="brand" onClick={() => setOpen(false)}>
+        <Link href="/dashboard" className="brand" onClick={() => setOpen(false)}>
           <Image src="/fraudguard-mark.svg" alt="" width={36} height={36} />
-          <span>FraudGuard</span>
+          <span>Credit Card Fraud Detection</span>
         </Link>
         <button className="burger" aria-label="Menu" onClick={() => setOpen(!open)}>☰</button>
         <nav className={open ? "links open" : "links"}>
